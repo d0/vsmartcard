@@ -1,4 +1,5 @@
 language: C
+sudo: false
 
 matrix:
   include:
@@ -6,6 +7,28 @@ matrix:
     - compiler: gcc
     - compiler: i686-w64-mingw32-gcc
     - compiler: x86_64-w64-mingw32-gcc
+
+addons:
+  apt:
+      packages:
+          - libpcsclite-dev
+          - libusb-dev
+          - xutils-dev
+          - gengetopt
+          - help2man
+          - swig
+          - python-dev
+          - binutils-mingw-w64
+          - gcc-mingw-w64;
+
+  coverity_scan:
+    project:
+      name: "frankmorgner/vsmartcard"
+      description: "Umbrella project for various projects concerned with the emulation of different types of smart card readers or smart cards themselves"
+    notification_email: morgner@informatik.hu-berlin.de
+    build_command: make -C $TRAVIS_BUILD_DIR/npa -C $TRAVIS_BUILD_DIR/virtualsmartcard -C $TRAVIS_BUILD_DIR/ccid -C $TRAVIS_BUILD_DIR/pcsc-relay
+    branch_pattern: coverity_scan
+
 
 env:
   global:
@@ -18,20 +41,14 @@ env:
     #   via the "travis encrypt" command using the project repo's public key
     - secure: "M+eNZPASDoFdWZUeSyu4whvPKaOwd0AlCmGWKc7SRbQPD8x8Ao8y3+kr++YonsWBnDUqQSNg3v4uWsJOo2Q57qMQ+FYcNlEjrYpXXSRdH4BnYnTH1WfNnTce7N5Bln9wxE+khe7cZJcxy+gvd+YiutQvHjT+bTzrs2MtHD0Odlw="
 
-before_install:
-  - sudo apt-get update
-
 install:
   - if [ "$CC" == i686-w64-mingw32-gcc -o "$CC" == x86_64-w64-mingw32-gcc ]; then
       export HOST=${CC%%-gcc};
     fi
   - if [ $TRAVIS_OS_NAME == linux ]; then
       if [ -z "$HOST" ]; then
-        sudo ln -s /lib/x86_64-linux-gnu/libgcc_s.so.1 /lib/x86_64-linux-gnu/libgcc_s.so;
-        sudo apt-get -qq install libpcsclite-dev libusb-dev xutils-dev gengetopt help2man swig python-dev;
+        # sudo ln -s /lib/x86_64-linux-gnu/libgcc_s.so.1 /lib/x86_64-linux-gnu/libgcc_s.so;
         pip install --user pycrypto;
-      else
-        sudo apt-get -qq install libpcsclite-dev libusb-dev xutils-dev gengetopt help2man binutils-mingw-w64 gcc-mingw-w64;
       fi
     fi
 
@@ -93,15 +110,6 @@ before_script:
   - if [ -z "$HOST" ]; then
       cd $TRAVIS_BUILD_DIR/ccid && autoreconf -vsi && ./configure OPENSSL_CFLAGS="-I$PREFIX/include" OPENSSL_LIBS="-L$PREFIX/lib -lcrypto" OPENSC_LIBS="-L$PREFIX/lib -lopensc" || cat config.log;
     fi
-
-addons:
-  coverity_scan:
-    project:
-      name: "frankmorgner/vsmartcard"
-      description: "Umbrella project for various projects concerned with the emulation of different types of smart card readers or smart cards themselves"
-    notification_email: morgner@informatik.hu-berlin.de
-    build_command: make -C $TRAVIS_BUILD_DIR/npa -C $TRAVIS_BUILD_DIR/virtualsmartcard -C $TRAVIS_BUILD_DIR/ccid -C $TRAVIS_BUILD_DIR/pcsc-relay
-    branch_pattern: coverity_scan
 
 script:
   # Build libnpa
