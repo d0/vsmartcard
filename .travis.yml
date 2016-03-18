@@ -40,19 +40,16 @@ env:
     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
     #   via the "travis encrypt" command using the project repo's public key
     - secure: "M+eNZPASDoFdWZUeSyu4whvPKaOwd0AlCmGWKc7SRbQPD8x8Ao8y3+kr++YonsWBnDUqQSNg3v4uWsJOo2Q57qMQ+FYcNlEjrYpXXSRdH4BnYnTH1WfNnTce7N5Bln9wxE+khe7cZJcxy+gvd+YiutQvHjT+bTzrs2MtHD0Odlw="
+    - if [ "$CC" == i686-w64-mingw32-gcc -o "$CC" == x86_64-w64-mingw32-gcc ]; then
+        export HOST=${CC%%-gcc};
+      fi
 
-install:
-  - if [ "$CC" == i686-w64-mingw32-gcc -o "$CC" == x86_64-w64-mingw32-gcc ]; then
-      export HOST=${CC%%-gcc};
-    fi
+before_script:
   - if [ $TRAVIS_OS_NAME == linux ]; then
       if [ -z "$HOST" ]; then
-        # sudo ln -s /lib/x86_64-linux-gnu/libgcc_s.so.1 /lib/x86_64-linux-gnu/libgcc_s.so;
         pip install --user pycrypto;
       fi
     fi
-
-before_script:
   # libnpa requires OpenPACE
   - git clone https://github.com/frankmorgner/openpace && cd openpace
   - autoreconf -vis
