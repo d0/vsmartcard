@@ -16,8 +16,6 @@ addons:
           - help2man
           - swig
           - python-dev
-          - binutils-mingw-w64
-          - gcc-mingw-w64;
 
   coverity_scan:
     project:
